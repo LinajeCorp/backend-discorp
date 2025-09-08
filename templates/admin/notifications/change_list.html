@@ -23,36 +23,139 @@
 
 {% block result_list %}
     <!-- Panel de estadísticas rápidas -->
-    <div style="display: flex; gap: 15px; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-        <div style="flex: 1; text-align: center;">
-            <h3 style="margin: 0; color: #007bff; font-size: 24px;">{{ total_notifications|default:0 }}</h3>
-            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 12px;">Total Notificaciones</p>
+    <div class="stats-dashboard">
+        <div class="stat-item">
+            <h3 class="stat-number stat-primary">{{ total_notifications|default:0 }}</h3>
+            <p class="stat-description">Total Notificaciones</p>
         </div>
-        <div style="flex: 1; text-align: center;">
-            <h3 style="margin: 0; color: #28a745; font-size: 24px;">{{ sent_today|default:0 }}</h3>
-            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 12px;">Enviadas Hoy</p>
+        <div class="stat-item">
+            <h3 class="stat-number stat-success">{{ sent_today|default:0 }}</h3>
+            <p class="stat-description">Enviadas Hoy</p>
         </div>
-        <div style="flex: 1; text-align: center;">
-            <h3 style="margin: 0; color: #ffc107; font-size: 24px;">{{ total_devices|default:0 }}</h3>
-            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 12px;">Dispositivos Activos</p>
+        <div class="stat-item">
+            <h3 class="stat-number stat-warning">{{ total_devices|default:0 }}</h3>
+            <p class="stat-description">Dispositivos Activos</p>
         </div>
     </div>
 
     <!-- Botones de acceso rápido -->
-    <div style="margin-bottom: 20px;">
-        <a href="{% url 'admin:send_notification' %}" 
-           style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+    <div class="action-buttons">
+        <a href="{% url 'admin:send_notification' %}" class="btn btn-primary">
             🚀 Enviar Notificación
         </a>
-        <a href="{% url 'admin:fcm_django_fcmdevice_changelist' %}" 
-           style="display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+        <a href="{% url 'admin:fcm_django_fcmdevice_changelist' %}" class="btn btn-success">
             📱 Ver Dispositivos
         </a>
-        <a href="{% url 'admin:notification_history' %}" 
-           style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px;">
+        <a href="{% url 'admin:notification_history' %}" class="btn btn-secondary">
             📊 Historial Detallado
         </a>
     </div>
 
     {{ block.super }}
+
+<style>
+/* Estilos para el dashboard de notificaciones que respetan el tema dark/light */
+.stats-dashboard {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--darkened-bg, #f8f9fa);
+    border-radius: 8px;
+    border: 1px solid var(--hairline-color, #dee2e6);
+    flex-wrap: wrap;
+}
+
+.stat-item {
+    flex: 1;
+    text-align: center;
+    min-width: 120px;
+}
+
+.stat-number {
+    margin: 0;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.stat-primary {
+    color: var(--primary, #007bff);
+}
+
+.stat-success {
+    color: var(--success-fg, #28a745);
+}
+
+.stat-warning {
+    color: var(--warning-fg, #ffc107);
+}
+
+.stat-description {
+    margin: 5px 0 0 0;
+    color: var(--body-quiet-color, #6c757d);
+    font-size: 12px;
+}
+
+.action-buttons {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: var(--primary, #007bff);
+    color: var(--primary-fg, #fff);
+    border-color: var(--primary, #007bff);
+}
+
+.btn-success {
+    background: var(--success-fg, #28a745);
+    color: #fff;
+    border-color: var(--success-fg, #28a745);
+}
+
+.btn-secondary {
+    background: var(--close-button-bg, #6c757d);
+    color: var(--close-button-fg, #fff);
+    border-color: var(--close-button-bg, #6c757d);
+}
+
+.btn:hover {
+    opacity: 0.8;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .stats-dashboard {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stat-item {
+        margin-bottom: 10px;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+    
+    .btn {
+        text-align: center;
+        margin-bottom: 5px;
+    }
+}
+</style>
 {% endblock %}

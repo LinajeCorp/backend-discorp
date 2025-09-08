@@ -17,12 +17,10 @@
 <div class="module aligned">
     <!-- Botones de navegación -->
     <div style="margin-bottom: 20px;">
-        <a href="{% url 'admin:send_notification' %}" 
-           style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+        <a href="{% url 'admin:send_notification' %}" class="btn-primary">
             🚀 Enviar Nueva Notificación
         </a>
-        <a href="{% url 'admin:notifications_notificationhistory_changelist' %}" 
-           style="display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px;">
+        <a href="{% url 'admin:notifications_notificationhistory_changelist' %}" class="btn-success">
             📋 Volver al Historial
         </a>
     </div>
@@ -94,7 +92,7 @@
                     <td style="max-width: 300px; word-wrap: break-word;">
                         {{ notification.body|truncatewords:10 }}
                         {% if notification.error_message %}
-                            <br><small style="color: #dc3545;">
+                            <br><small class="error-text">
                                 <strong>Error:</strong> {{ notification.error_message|truncatewords:5 }}
                             </small>
                         {% endif %}
@@ -105,26 +103,23 @@
         </table>
     </div>
     {% else %}
-    <div class="module" style="text-align: center; padding: 40px;">
-        <h3 style="color: #666;">📭 No hay notificaciones en el historial</h3>
-        <p style="color: #999; margin-bottom: 20px;">
-            Comienza enviando tu primera notificación
-        </p>
-        <a href="{% url 'admin:send_notification' %}" 
-           style="display: inline-block; padding: 15px 30px; background: #007bff; color: white; text-decoration: none; border-radius: 8px; font-size: 16px;">
+    <div class="module empty-state">
+        <h3>📭 No hay notificaciones en el historial</h3>
+        <p>Comienza enviando tu primera notificación</p>
+        <a href="{% url 'admin:send_notification' %}" class="btn-primary" style="font-size: 16px; padding: 15px 30px;">
             🚀 Enviar Primera Notificación
         </a>
     </div>
     {% endif %}
 
     <!-- Información adicional -->
-    <div class="module" style="margin-top: 30px; background: #f8f9fa; padding: 15px; border-radius: 8px;">
-        <h3 style="margin-top: 0; color: #495057;">ℹ️ Información</h3>
+    <div class="info-module">
+        <h3 style="margin-top: 0;">ℹ️ Información</h3>
         <ul style="margin-bottom: 0;">
             <li><strong>Estados:</strong> 
-                <span style="color: #28a745;">✅ Enviado</span>, 
-                <span style="color: #ffc107;">⏳ Pendiente</span>, 
-                <span style="color: #dc3545;">❌ Fallido</span>
+                <span class="status-sent">✅ Enviado</span>, 
+                <span class="status-pending">⏳ Pendiente</span>, 
+                <span class="status-failed">❌ Fallido</span>
             </li>
             <li><strong>Tipos:</strong> 
                 🧪 Prueba, 👤 Usuario específico, 📢 Broadcast, 👨‍💼 Administrador
@@ -135,39 +130,136 @@
 </div>
 
 <style>
+/* Estilos que respetan el tema dark/light del admin de Django */
 #result_list {
     width: 100%;
     border-collapse: collapse;
     margin-top: 10px;
+    background: var(--body-bg, #fff);
+    color: var(--body-fg, #333);
 }
 
 #result_list th, #result_list td {
     padding: 8px 12px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--hairline-color, #ddd);
     vertical-align: top;
 }
 
 #result_list th {
-    background-color: #f8f9fa;
+    background-color: var(--darkened-bg, #f8f9fa);
     font-weight: bold;
-    color: #495057;
+    color: var(--body-fg, #495057);
+    border-bottom: 1px solid var(--hairline-color, #ddd);
 }
 
 #result_list .row1 {
-    background-color: #f9f9f9;
+    background-color: var(--darkened-bg, #f9f9f9);
 }
 
 #result_list .row2 {
-    background-color: #ffffff;
+    background-color: var(--body-bg, #ffffff);
 }
 
 #result_list tr:hover {
-    background-color: #e9ecef;
+    background-color: var(--selected-bg, #e9ecef);
+}
+
+.module {
+    background: var(--body-bg, #fff);
+    color: var(--body-fg, #333);
+    border: 1px solid var(--hairline-color, #ddd);
 }
 
 .module h3 {
     margin-bottom: 15px;
+    color: var(--body-fg, #333);
+}
+
+/* Botones que respetan el tema */
+.button, .btn-primary {
+    background: var(--primary, #007bff) !important;
+    color: var(--primary-fg, #fff) !important;
+    border: 1px solid var(--primary, #007bff) !important;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+.btn-success {
+    background: var(--success-fg, #28a745) !important;
+    color: #fff !important;
+    border: 1px solid var(--success-fg, #28a745) !important;
+}
+
+.button:hover, .btn-primary:hover, .btn-success:hover {
+    opacity: 0.8;
+    color: #fff !important;
+}
+
+/* Información adicional con tema */
+.info-module {
+    background: var(--darkened-bg, #f8f9fa);
+    color: var(--body-fg, #495057);
+    border: 1px solid var(--hairline-color, #dee2e6);
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+/* Estados con colores que funcionan en dark/light */
+.status-sent {
+    color: var(--success-fg, #28a745);
+    font-weight: bold;
+}
+
+.status-pending {
+    color: var(--warning-fg, #ffc107);
+    font-weight: bold;
+}
+
+.status-failed {
+    color: var(--error-fg, #dc3545);
+    font-weight: bold;
+}
+
+/* Texto de error */
+.error-text {
+    color: var(--error-fg, #dc3545);
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--body-quiet-color, #666);
+}
+
+.empty-state h3 {
+    color: var(--body-quiet-color, #666);
+}
+
+.empty-state p {
+    color: var(--body-quiet-color, #999);
+    margin-bottom: 20px;
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+    #result_list th, #result_list td {
+        padding: 6px 8px;
+        font-size: 12px;
+    }
+    
+    .button, .btn-primary, .btn-success {
+        padding: 8px 15px;
+        font-size: 14px;
+        margin-bottom: 10px;
+        display: block;
+        text-align: center;
+    }
 }
 </style>
 {% endblock %}
