@@ -26,4 +26,5 @@ dependencies = [
     "drf-yasg>=1.21.10",
     "gunicorn>=21.2.0",
     "whitenoise>=6.6.0",
+    "fcm-django>=2.3.1",
 ]

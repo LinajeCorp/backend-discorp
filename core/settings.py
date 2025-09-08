@@ -29,23 +29,23 @@ SECRET_KEY = env.secret_key
 DEBUG = env.debug
 
 ALLOWED_HOSTS = env.allowed_hosts_list + [
-    'backend-discrop-production.up.railway.app',
-    '.railway.app',
-    '.up.railway.app',
+    "backend-discrop-production.up.railway.app",
+    ".railway.app",
+    ".up.railway.app",
 ]
 
 # Configuración para Railway
 CSRF_TRUSTED_ORIGINS = [
-    'https://*.railway.app',
-    'https://*.up.railway.app',
-    'https://backend-discrop-production.up.railway.app',
+    "https://*.railway.app",
+    "https://*.up.railway.app",
+    "https://backend-discrop-production.up.railway.app",
 ]
 
 # Permitir healthchecks sin CSRF
 CSRF_EXEMPT_URLS = [
-    '/docs/',
-    '/admin/',
-    '/api/v1/',
+    "/docs/",
+    "/admin/",
+    "/api/v1/",
 ]
 
 
@@ -67,6 +67,7 @@ INSTALLED_APPS = [
     "cloudinary_storage",
     "cloudinary",
     "channels",
+    "fcm_django",
     "apps.users",
 ]
 
@@ -370,8 +371,8 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Configuración adicional para archivos estáticos en producción
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 
 # Configuración para servir archivos estáticos con whitenoise (si se necesita)
 if not DEBUG:
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
