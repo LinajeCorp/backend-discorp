@@ -20,21 +20,31 @@ from django.urls import path, re_path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from drf_yasg.generators import OpenAPISchemaGenerator
+
+
+class BothHttpAndHttpsSchemaGenerator(OpenAPISchemaGenerator):
+    def get_schema(self, request=None, public=False):
+        schema = super().get_schema(request, public)
+        schema.schemes = ["http", "https"]
+        return schema
+
 
 # Schema view configuration for drf-yasg
 schema_view = get_schema_view(
     openapi.Info(
         title="discorp API",
-        default_version='v1',
+        default_version="v1",
         description="API REST para el sistema de delivery de comida discorp "
-                    "con usuarios multi-rol",
+        "con usuarios multi-rol",
         terms_of_service="https://www.google.com/policies/terms/",
         contact=openapi.Contact(
-            name="Equipo de Desarrollo discorp",
-            email="dev@discorp.com"
+            name="Equipo de Desarrollo discorp", email="dev@discorp.com"
         ),
         license=openapi.License(name="MIT License"),
+        schemes=["http", "https"],
     ),
+    generator_class=BothHttpAndHttpsSchemaGenerator,
     public=True,
     permission_classes=(permissions.AllowAny,),
 )
@@ -42,19 +52,19 @@ schema_view = get_schema_view(
 urlpatterns = [
     # URL personalizada DEBE ir antes del admin
     path("admin/", admin.site.urls),
-    
     # API URLs
-    path('api/v1/', include('apps.users.urls')),
-    path('api/v1/', include('apps.products.urls')),
-
+    path("api/v1/", include("apps.users.urls")),
+    path("api/v1/", include("apps.products.urls")),
     # drf-yasg Swagger/OpenAPI URLs
-    re_path(r'^swagger(?P<format>\.json|\.yaml)$',
-            schema_view.without_ui(cache_timeout=0),
-            name='schema-json'),
-    path('docs/',
-         schema_view.with_ui('swagger', cache_timeout=0),
-         name='schema-swagger-ui'),
-    path('redoc/',
-         schema_view.with_ui('redoc', cache_timeout=0),
-         name='schema-redoc'),
+    re_path(
+        r"^swagger(?P<format>\.json|\.yaml)$",
+        schema_view.without_ui(cache_timeout=0),
+        name="schema-json",
+    ),
+    path(
+        "docs/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
+    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
