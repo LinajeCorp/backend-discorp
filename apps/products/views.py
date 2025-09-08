@@ -4,15 +4,15 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from django.conf import settings
 
 
 class ProductsAPIView(APIView):
     """
     API View para consultar productos desde Strapi
 
-    Este endpoint consulta la API externa de Strapi y retorna
-    exactamente la misma estructura de datos sin modificaciones.
+    Este endpoint consulta la API externa de Strapi, procesa los datos
+    y retorna solo los campos necesarios: id, title, description,
+    img (imagen principal) e img_variants (variantes de imágenes).
     """
 
     permission_classes = [permissions.AllowAny]
@@ -20,13 +20,6 @@ class ProductsAPIView(APIView):
     @swagger_auto_schema(
         operation_description="Obtener lista de productos desde API externa de Strapi",
         manual_parameters=[
-            openapi.Parameter(
-                "populate",
-                openapi.IN_QUERY,
-                description="Parámetro para incluir relaciones (valor por defecto: *)",
-                type=openapi.TYPE_STRING,
-                default="*",
-            ),
             openapi.Parameter(
                 "page",
                 openapi.IN_QUERY,
@@ -48,42 +41,36 @@ class ProductsAPIView(APIView):
                         "data": [
                             {
                                 "id": 141,
-                                "documentId": "mpo7g5fw5ld0iyirxpi8oxmp",
-                                "title": "**Un POS integral que** _combina potencia y versatilidad_ **en cada transacción**",
-                                "slug": "n82",
-                                "description": "El N82 está pensado para negocios que buscan agilidad y conectividad avanzada...",
-                                "price": None,
-                                "createdAt": "2025-08-14T23:33:27.683Z",
-                                "updatedAt": "2025-08-18T15:54:18.653Z",
-                                "publishedAt": "2025-08-18T15:54:21.294Z",
-                                "technical_specification": "# **Especificaciones Técnicas**...",
-                                "title2": "**POS** _inteligente_ **N82**",
-                                "description2": "Diseñado para quienes necesitan rendimiento constante...",
-                                "feature_title": "**Opera sin barreras,** _con tecnología inteligente_...",
-                                "feature_description": "El N82 se adapta al ritmo de tu negocio...",
-                                "slug_title": "N82",
-                                "feature_title1": None,
-                                "experiment_title": "**Diseño que optimiza tus cobros,**...",
-                                "experiment_description": "El N82 es una herramienta integral...",
-                                "payment_methods": None,
-                                "payment_description": None,
-                                "product_tecnology": {
-                                    "id": 2,
-                                    "documentId": "eq22r8cwt1w6ny1yemolxqj6",
-                                    "createdAt": "2025-07-23T15:40:11.067Z",
-                                    "updatedAt": "2025-07-23T15:40:11.067Z",
-                                    "publishedAt": "2025-07-23T15:40:12.149Z",
-                                    "title": "Android",
-                                },
-                                "product_features": [
+                                "title": "**Un POS integral que** _combina potencia y "
+                                         "versatilidad_ **en cada transacción**",
+                                "description": "El N82 está pensado para negocios "
+                                               "que buscan agilidad y conectividad "
+                                               "avanzada...",
+                                "img": "https://res.cloudinary.com/dsgcdhkwc/image/"
+                                       "upload/v1717649909/gris_5b48bac258.png",
+                                "img_variants": [
                                     {
-                                        "id": 450,
-                                        "title": "Pantalla Táctil",
-                                        "description": 'Pantalla táctil capacitiva de 5" para una interacción fluida.',
-                                        "icon": None,
+                                        "id": 215,
+                                        "img": "https://res.cloudinary.com/dsgcdhkwc/"
+                                               "image/upload/v1717643491/"
+                                               "G5_single_Image_b97a6efe04.png",
+                                        "title": None
+                                    },
+                                    {
+                                        "id": 216,
+                                        "img": "https://res.cloudinary.com/dsgcdhkwc/"
+                                               "image/upload/v1717649909/"
+                                               "gris_5b48bac258.png",
+                                        "title": None
+                                    },
+                                    {
+                                        "id": 217,
+                                        "img": "https://res.cloudinary.com/dsgcdhkwc/"
+                                               "image/upload/v1717649638/"
+                                               "azul_6f20cf6c32.png",
+                                        "title": None
                                     }
-                                ],
-                                "product_color": [],
+                                ]
                             }
                         ],
                         "meta": {
@@ -113,11 +100,15 @@ class ProductsAPIView(APIView):
         """
         Consultar productos desde la API externa de Strapi
 
-        Retorna exactamente la misma estructura de datos que viene de Strapi
-        sin ninguna modificación o procesamiento adicional.
+        Procesa los datos de Strapi y retorna solo los campos necesarios:
+        - id: ID del producto
+        - title: Título del producto
+        - description: Descripción del producto
+        - img: Imagen principal (del primer color disponible)
+        - img_variants: Array con todas las variantes de imágenes
         """
         try:
-            # URL de la API externa de Strapi
+            # URL de la API externa de Strapi con populate específico
             strapi_url = (
                 "https://strapi-disglobal-production.up.railway.app/api/products"
             )
@@ -125,9 +116,10 @@ class ProductsAPIView(APIView):
             # Construir parámetros de query
             params = {}
 
-            # Parámetro populate (por defecto *)
-            populate = request.query_params.get("populate", "*")
-            params["populate"] = populate
+            # Parámetros de populate específicos (fijos)
+            params["populate[0]"] = "product_color.images"
+            params["populate[1]"] = "product_features"
+            params["populate[2]"] = "product_tecnology"
 
             # Parámetros de paginación
             page = request.query_params.get("page")
@@ -147,8 +139,51 @@ class ProductsAPIView(APIView):
 
             # Verificar si la petición fue exitosa
             if response.status_code == 200:
-                # Retornar exactamente la misma data que viene de Strapi
-                return Response(response.json(), status=status.HTTP_200_OK)
+                # Obtener los datos de Strapi
+                strapi_data = response.json()
+
+                # Procesar y filtrar los datos para devolver solo lo necesario
+                filtered_products = []
+
+                for product in strapi_data.get('data', []):
+                    # Obtener la imagen principal del primer color disponible
+                    main_image = None
+                    if (product.get('product_color') and
+                            len(product['product_color']) > 0):
+                        main_image = product['product_color'][0].get('img')
+
+                    # Obtener todas las imágenes variantes del primer color
+                    image_variants = []
+                    if (product.get('product_color') and
+                            len(product['product_color']) > 0):
+                        images = product['product_color'][0].get('images', [])
+                        image_variants = [
+                            {
+                                "id": img.get('id'),
+                                "img": img.get('img'),
+                                "title": img.get('title')
+                            }
+                            for img in images
+                        ]
+
+                    # Crear el producto filtrado
+                    filtered_product = {
+                        "id": product.get('id'),
+                        "title": product.get('title'),
+                        "description": product.get('description'),
+                        "img": main_image,
+                        "img_variants": image_variants
+                    }
+
+                    filtered_products.append(filtered_product)
+
+                # Crear la respuesta con la misma estructura de paginación
+                filtered_response = {
+                    "data": filtered_products,
+                    "meta": strapi_data.get('meta', {})
+                }
+
+                return Response(filtered_response, status=status.HTTP_200_OK)
             else:
                 return Response(
                     {
