@@ -17,6 +17,3 @@ cmds = [
   'mkdir -p static',
   'uv run python manage.py collectstatic --noinput'
 ]
-
-[start]
-cmd = 'uv run python manage.py migrate && uv run gunicorn core.wsgi:application --bind 0.0.0.0:8080 --workers 3 --timeout 120'

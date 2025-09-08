@@ -36,6 +36,13 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.up.railway.app',
 ]
 
+# Permitir healthchecks sin CSRF
+CSRF_EXEMPT_URLS = [
+    '/docs/',
+    '/admin/',
+    '/api/v1/',
+]
+
 
 # Application definition
 
