@@ -1,0 +1,58 @@
+{% extends "admin/change_list.html" %}
+
+{% block content_title %}
+    <h1>📋 Historial de Notificaciones Push</h1>
+{% endblock %}
+
+{% block object-tools %}
+    <ul class="object-tools">
+        <li>
+            <a href="{% url 'admin:send_notification' %}" class="addlink">
+                🔔 Enviar Nueva Notificación
+            </a>
+        </li>
+        {% if perms.notifications.add_notificationhistory %}
+        <li>
+            <a href="{% url 'admin:notification_history' %}" class="viewlink">
+                📈 Historial Detallado
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+{% endblock %}
+
+{% block result_list %}
+    <!-- Panel de estadísticas rápidas -->
+    <div style="display: flex; gap: 15px; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+        <div style="flex: 1; text-align: center;">
+            <h3 style="margin: 0; color: #007bff; font-size: 24px;">{{ total_notifications|default:0 }}</h3>
+            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 12px;">Total Notificaciones</p>
+        </div>
+        <div style="flex: 1; text-align: center;">
+            <h3 style="margin: 0; color: #28a745; font-size: 24px;">{{ sent_today|default:0 }}</h3>
+            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 12px;">Enviadas Hoy</p>
+        </div>
+        <div style="flex: 1; text-align: center;">
+            <h3 style="margin: 0; color: #ffc107; font-size: 24px;">{{ total_devices|default:0 }}</h3>
+            <p style="margin: 5px 0 0 0; color: #6c757d; font-size: 12px;">Dispositivos Activos</p>
+        </div>
+    </div>
+
+    <!-- Botones de acceso rápido -->
+    <div style="margin-bottom: 20px;">
+        <a href="{% url 'admin:send_notification' %}" 
+           style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+            🚀 Enviar Notificación
+        </a>
+        <a href="{% url 'admin:fcm_django_fcmdevice_changelist' %}" 
+           style="display: inline-block; padding: 10px 20px; background: #28a745; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">
+            📱 Ver Dispositivos
+        </a>
+        <a href="{% url 'admin:notification_history' %}" 
+           style="display: inline-block; padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 5px;">
+            📊 Historial Detallado
+        </a>
+    </div>
+
+    {{ block.super }}
+{% endblock %}

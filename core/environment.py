@@ -85,3 +85,6 @@ class Environment(BaseSettings):
     cloudinary_cloud_name: str = Field(default="", env="CLOUDINARY_CLOUD_NAME")
     cloudinary_api_key: str = Field(default="", env="CLOUDINARY_API_KEY")
     cloudinary_api_secret: str = Field(default="", env="CLOUDINARY_API_SECRET")
+
+    # Firebase Configuration
+    custom_google_application_credentials: str = Field(default="", env="CUSTOM_GOOGLE_APPLICATION_CREDENTIALS")

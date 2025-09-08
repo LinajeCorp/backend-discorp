@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "channels",
     "fcm_django",
     "apps.users",
+    "apps.notifications",
 ]
 
 MIDDLEWARE = [
@@ -376,3 +377,37 @@ STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 # Configuración para servir archivos estáticos con whitenoise (si se necesita)
 if not DEBUG:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+
+# Firebase Configuration con fcm-django
+import os
+from firebase_admin import initialize_app, credentials
+
+# Configuración Firebase según fcm-django docs
+FIREBASE_CREDENTIALS_PATH = os.path.join(
+    BASE_DIR, "core", "discorp-4a37b-firebase-adminsdk-fbsvc-ab47525fe2.json"
+)
+
+# Inicializar Firebase App según fcm-django
+if os.path.exists(FIREBASE_CREDENTIALS_PATH):
+    # Configurar variable de entorno que fcm-django necesita
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = FIREBASE_CREDENTIALS_PATH
+    
+    # Inicializar Firebase App
+    FIREBASE_APP = initialize_app()
+    print("✅ Firebase App inicializado para fcm-django")
+else:
+    print(f"❌ Archivo de credenciales no encontrado en: {FIREBASE_CREDENTIALS_PATH}")
+    FIREBASE_APP = None
+
+# Configuración FCM Django
+FCM_DJANGO_SETTINGS = {
+    # Usar la Firebase App que inicializamos
+    "DEFAULT_FIREBASE_APP": FIREBASE_APP,
+    # Nombre verbose de la app
+    "APP_VERBOSE_NAME": "Discorp FCM",
+    # Solo un dispositivo activo por usuario
+    "ONE_DEVICE_PER_USER": False,
+    # Eliminar dispositivos inactivos automáticamente
+    "DELETE_INACTIVE_DEVICES": True,
+}

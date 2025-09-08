@@ -18,9 +18,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, re_path, include
 from rest_framework import permissions
+from rest_framework.routers import DefaultRouter
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from drf_yasg.generators import OpenAPISchemaGenerator
+
+# FCM Django ViewSets
+from fcm_django.api.rest_framework import FCMDeviceAuthorizedViewSet
+
+# Router para FCM Django
+fcm_router = DefaultRouter()
+fcm_router.register('devices', FCMDeviceAuthorizedViewSet, basename='fcm_device')
 
 
 class BothHttpAndHttpsSchemaGenerator(OpenAPISchemaGenerator):
@@ -55,6 +63,10 @@ urlpatterns = [
     # API URLs
     path("api/v1/", include("apps.users.urls")),
     path("api/v1/", include("apps.products.urls")),
+    # FCM Django URLs para notificaciones
+    path("api/v1/fcm/", include(fcm_router.urls)),
+    # Endpoints personalizados para notificaciones
+    path("api/v1/notifications/", include("apps.notifications.urls")),
     # drf-yasg Swagger/OpenAPI URLs
     re_path(
         r"^swagger(?P<format>\.json|\.yaml)$",
