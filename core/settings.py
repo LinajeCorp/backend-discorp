@@ -203,6 +203,9 @@ SWAGGER_SETTINGS = {
     "SHOW_EXTENSIONS": True,
     "SHOW_COMMON_EXTENSIONS": True,
     "DEFAULT_MODEL_RENDERING": "example",
+    # Soportar tanto HTTP como HTTPS en la documentación
+    "DEFAULT_API_URL": None,  # Usar URL actual del request
+    "SCHEMES": ["http", "https"],
 }
 
 REDOC_SETTINGS = {
