@@ -177,3 +177,8 @@ logs/
 htmlcov/
 .coverage
 .coverage.*
+
+# Firebase Credentials (NUNCA subir al repositorio)
+*firebase*adminsdk*.json
+core/discorp-*-firebase-adminsdk-*.json
+firebase-credentials.json
