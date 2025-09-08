@@ -5,7 +5,7 @@ PYTHONUNBUFFERED = "1"
 PYTHONDONTWRITEBYTECODE = "1"
 
 [phases.setup]
-nixPkgs = ['python311', 'uv', 'libpq']
+nixPkgs = ['python311', 'uv', 'postgresql']
 
 [phases.install]
 cmds = [
@@ -19,4 +19,4 @@ cmds = [
 ]
 
 [start]
-cmd = 'uv run python manage.py migrate && uv run gunicorn core.wsgi:application --bind 0.0.0.0:8080 --workers 3 --timeout 120'
+cmd = 'uv run python manage.py migrate && uv run gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120'
