@@ -67,24 +67,45 @@ class Environment(BaseSettings):
         """Extrae el puerto de Redis de la URL."""
         parsed = urlparse(self.redis_url)
         return parsed.port
-    
+
     # Stripe Configuration
     stripe_publishable_key: str = Field(default="", env="STRIPE_PUBLISHABLE_KEY")
     stripe_secret_key: str = Field(default="", env="STRIPE_SECRET_KEY")
     stripe_webhook_secret: str = Field(default="", env="STRIPE_WEBHOOK_SECRET")
-    
+
     # PayPal Configuration
     paypal_client_id: str = Field(default="", env="PAYPAL_CLIENT_ID")
     paypal_client_secret: str = Field(default="", env="PAYPAL_CLIENT_SECRET")
     paypal_sandbox: bool = Field(default=True, env="PAYPAL_SANDBOX")
-    
+
     # Frontend URL for redirects
     frontend_url: str = Field(default="http://localhost:3000", env="FRONTEND_URL")
-    
+
     # Cloudinary Configuration
     cloudinary_cloud_name: str = Field(default="", env="CLOUDINARY_CLOUD_NAME")
     cloudinary_api_key: str = Field(default="", env="CLOUDINARY_API_KEY")
     cloudinary_api_secret: str = Field(default="", env="CLOUDINARY_API_SECRET")
 
     # Firebase Configuration
-    custom_google_application_credentials: str = Field(default="", env="CUSTOM_GOOGLE_APPLICATION_CREDENTIALS")
+    firebase_type: str = Field(default="service_account", env="FIREBASE_TYPE")
+    firebase_project_id: str = Field(default="", env="FIREBASE_PROJECT_ID")
+    firebase_private_key_id: str = Field(default="", env="FIREBASE_PRIVATE_KEY_ID")
+    firebase_private_key: str = Field(default="", env="FIREBASE_PRIVATE_KEY")
+    firebase_client_email: str = Field(default="", env="FIREBASE_CLIENT_EMAIL")
+    firebase_client_id: str = Field(default="", env="FIREBASE_CLIENT_ID")
+    firebase_auth_uri: str = Field(
+        default="https://accounts.google.com/o/oauth2/auth", env="FIREBASE_AUTH_URI"
+    )
+    firebase_token_uri: str = Field(
+        default="https://oauth2.googleapis.com/token", env="FIREBASE_TOKEN_URI"
+    )
+    firebase_auth_provider_x509_cert_url: str = Field(
+        default="https://www.googleapis.com/oauth2/v1/certs",
+        env="FIREBASE_AUTH_PROVIDER_X509_CERT_URL",
+    )
+    firebase_client_x509_cert_url: str = Field(
+        default="", env="FIREBASE_CLIENT_X509_CERT_URL"
+    )
+    firebase_universe_domain: str = Field(
+        default="googleapis.com", env="FIREBASE_UNIVERSE_DOMAIN"
+    )

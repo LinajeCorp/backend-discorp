@@ -379,25 +379,75 @@ if not DEBUG:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 
-# Firebase Configuration con fcm-django
+# Firebase Configuration con fcm-django usando variables de entorno
 import os
+import json
+import tempfile
 from firebase_admin import initialize_app, credentials
 
-# Configuración Firebase según fcm-django docs
-FIREBASE_CREDENTIALS_PATH = os.path.join(
-    BASE_DIR, "core", "discorp-4a37b-firebase-adminsdk-fbsvc-ab47525fe2.json"
-)
 
-# Inicializar Firebase App según fcm-django
-if os.path.exists(FIREBASE_CREDENTIALS_PATH):
-    # Configurar variable de entorno que fcm-django necesita
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = FIREBASE_CREDENTIALS_PATH
-    
-    # Inicializar Firebase App
-    FIREBASE_APP = initialize_app()
-    print("✅ Firebase App inicializado para fcm-django")
+# Crear credenciales Firebase desde variables de entorno
+def create_firebase_credentials():
+    """Crear credenciales Firebase desde variables de entorno"""
+    try:
+        firebase_config = {
+            "type": env.firebase_type,
+            "project_id": env.firebase_project_id,
+            "private_key_id": env.firebase_private_key_id,
+            "private_key": env.firebase_private_key.replace(
+                "\\n", "\n"
+            ),  # Convertir \n literales
+            "client_email": env.firebase_client_email,
+            "client_id": env.firebase_client_id,
+            "auth_uri": env.firebase_auth_uri,
+            "token_uri": env.firebase_token_uri,
+            "auth_provider_x509_cert_url": env.firebase_auth_provider_x509_cert_url,
+            "client_x509_cert_url": env.firebase_client_x509_cert_url,
+            "universe_domain": env.firebase_universe_domain,
+        }
+
+        # Validar que las credenciales mínimas estén presentes
+        required_fields = ["project_id", "private_key", "client_email"]
+        missing_fields = [
+            field for field in required_fields if not firebase_config.get(field)
+        ]
+
+        if missing_fields:
+            print(f"❌ Faltan campos de Firebase: {missing_fields}")
+            return None
+
+        return firebase_config
+    except Exception as e:
+        print(f"❌ Error creando credenciales Firebase: {e}")
+        return None
+
+
+# Inicializar Firebase App
+firebase_config = create_firebase_credentials()
+if firebase_config:
+    try:
+        # Crear archivo temporal con credenciales para fcm-django
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".json", delete=False
+        ) as temp_file:
+            json.dump(firebase_config, temp_file, indent=2)
+            temp_credentials_path = temp_file.name
+
+        # Configurar variable de entorno que fcm-django necesita
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = temp_credentials_path
+
+        # Inicializar Firebase App con credenciales
+        cred = credentials.Certificate(firebase_config)
+        FIREBASE_APP = initialize_app(cred)
+        print("✅ Firebase App inicializado desde variables de entorno")
+
+    except Exception as e:
+        print(f"❌ Error inicializando Firebase: {e}")
+        FIREBASE_APP = None
 else:
-    print(f"❌ Archivo de credenciales no encontrado en: {FIREBASE_CREDENTIALS_PATH}")
+    print(
+        "❌ No se pudieron crear las credenciales Firebase desde variables de entorno"
+    )
     FIREBASE_APP = None
 
 # Configuración FCM Django
