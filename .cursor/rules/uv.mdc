@@ -1,0 +1,23 @@
+---
+alwaysApply: true
+description: Uso obligatorio de uv/uvx para ejecutar comandos y paquetes, prohibir pip
+---
+# Empaquetador y ejecución: uv / uvx
+
+Estas reglas fijan que en este proyecto se usa `uv` como ejecutor/gestor de paquetes y `uvx` para invocar herramientas empaquetadas. No usar `pip`.
+
+## Reglas
+- Ejecutar scripts de Django con `uv run`, por ejemplo:
+  - `uv run ./manage.py check`
+  - `uv run ./manage.py makemigrations`
+  - `uv run ./manage.py migrate`
+  - `uv run ./manage.py startapp models/category`
+- Ejecutar binarios/herramientas con `uvx`. Para scaffolding de Django, por ejemplo:
+  - `uvx --from django django-admin startproject core .`
+  - `uvx --from django django-admin startapp users`
+- Nunca usar `pip` para instalar o ejecutar paquetes.
+
+## Notas
+- Mantener dependencias en `pyproject.toml` y lockfile `uv.lock`.
+- Respetar reglas de Django 5.2 definidas en [django-5-2.mdc](mdc:.cursor/rules/django-5-2.mdc).
+

@@ -1,0 +1,664 @@
+openapi: 3.0.3
+info:
+  title: discorp API
+  version: 1.0.0
+  description: API REST para el sistema de gestión de categorías de discorp
+  contact:
+    name: Equipo de Desarrollo discorp
+    email: dev@discorp.com
+  license:
+    name: MIT License
+paths:
+  /api/categories/:
+    get:
+      operationId: categories_list
+      description: Obtiene una lista paginada de todas las categorías con filtros
+        opcionales.
+      summary: Listar categorías
+      parameters:
+      - in: query
+        name: is_active
+        schema:
+          type: boolean
+        description: Filtrar por estado activo
+      - in: query
+        name: level
+        schema:
+          type: integer
+        description: Filtrar por nivel jerárquico
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: Ordenar por campo (name, sort_order, created_at, updated_at)
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - in: query
+        name: parent
+        schema:
+          type: integer
+        description: Filtrar por categoría padre
+      - in: query
+        name: parent_id
+        schema:
+          type: integer
+        description: Filtrar por ID de categoría padre (0 para categorías raíz)
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Buscar por nombre, descripción o slug
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedCategoryListList'
+          description: ''
+    post:
+      operationId: categories_create
+      description: Crea una nueva categoría en el sistema.
+      summary: Crear categoría
+      tags:
+      - Categories
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateUpdateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryCreateUpdate'
+          description: ''
+  /api/categories/{id}/:
+    get:
+      operationId: categories_retrieve
+      description: Obtiene los detalles completos de una categoría específica.
+      summary: Obtener categoría
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Categoría.
+        required: true
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+    put:
+      operationId: categories_update
+      description: Actualiza completamente una categoría existente.
+      summary: Actualizar categoría
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Categoría.
+        required: true
+      tags:
+      - Categories
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateUpdateRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryCreateUpdate'
+          description: ''
+    patch:
+      operationId: categories_partial_update
+      description: Actualiza parcialmente una categoría existente.
+      summary: Actualizar categoría parcialmente
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Categoría.
+        required: true
+      tags:
+      - Categories
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryCreateUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryCreateUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCategoryCreateUpdateRequest'
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryCreateUpdate'
+          description: ''
+    delete:
+      operationId: categories_destroy
+      description: Elimina una categoría del sistema. No se puede eliminar si tiene
+        subcategorías.
+      summary: Eliminar categoría
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Categoría.
+        required: true
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/categories/{id}/breadcrumb/:
+    get:
+      operationId: categories_breadcrumb_retrieve
+      description: Obtiene el breadcrumb completo de una categoría específica.
+      summary: Obtener breadcrumb
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Categoría.
+        required: true
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/{id}/children/:
+    get:
+      operationId: categories_children_retrieve
+      description: Obtiene las subcategorías directas de una categoría específica.
+      summary: Obtener subcategorías
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Categoría.
+        required: true
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/{id}/descendants/:
+    get:
+      operationId: categories_descendants_retrieve
+      description: Obtiene todas las subcategorías (recursivamente) de una categoría
+        específica.
+      summary: Obtener descendientes
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Categoría.
+        required: true
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/{id}/parents/:
+    get:
+      operationId: categories_parents_retrieve
+      description: Obtiene todos los padres de una categoría específica.
+      summary: Obtener padres
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this Categoría.
+        required: true
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/root/:
+    get:
+      operationId: categories_root_retrieve
+      description: Obtiene solo las categorías raíz (sin padre).
+      summary: Obtener categorías raíz
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Category'
+          description: ''
+  /api/categories/tree/:
+    get:
+      operationId: categories_tree_retrieve
+      description: Obtiene el árbol completo de categorías con estructura jerárquica.
+      summary: Obtener árbol de categorías
+      tags:
+      - Categories
+      security:
+      - cookieAuth: []
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryTree'
+          description: ''
+components:
+  schemas:
+    Category:
+      type: object
+      description: |-
+        Serializer para el modelo Category.
+        Incluye campos calculados y relaciones jerárquicas.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Nombre
+          description: Nombre de la categoría
+          maxLength: 100
+        slug:
+          type: string
+          readOnly: true
+          description: URL amigable para la categoría
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          nullable: true
+          title: Descripción
+          description: Descripción opcional de la categoría
+        parent:
+          type: integer
+          nullable: true
+          title: Categoría padre
+          description: Categoría padre para crear subcategorías
+        parent_name:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          title: Activa
+          description: Indica si la categoría está activa
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+          description: Orden de visualización (menor número = mayor prioridad)
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de creación
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Fecha de actualización
+        is_root:
+          type: string
+          readOnly: true
+        is_parent:
+          type: string
+          readOnly: true
+        level:
+          type: string
+          readOnly: true
+        children_count:
+          type: string
+          readOnly: true
+        breadcrumb:
+          type: string
+          readOnly: true
+        children:
+          type: string
+          readOnly: true
+      required:
+      - breadcrumb
+      - children
+      - children_count
+      - created_at
+      - id
+      - is_parent
+      - is_root
+      - level
+      - name
+      - parent_name
+      - slug
+      - updated_at
+    CategoryCreateUpdate:
+      type: object
+      description: |-
+        Serializer específico para crear y actualizar categorías.
+        Excluye campos calculados para mejorar el rendimiento.
+      properties:
+        name:
+          type: string
+          title: Nombre
+          description: Nombre de la categoría
+          maxLength: 100
+        description:
+          type: string
+          nullable: true
+          title: Descripción
+          description: Descripción opcional de la categoría
+        parent:
+          type: integer
+          nullable: true
+          title: Categoría padre
+          description: Categoría padre para crear subcategorías
+        is_active:
+          type: boolean
+          title: Activa
+          description: Indica si la categoría está activa
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+          description: Orden de visualización (menor número = mayor prioridad)
+      required:
+      - name
+    CategoryCreateUpdateRequest:
+      type: object
+      description: |-
+        Serializer específico para crear y actualizar categorías.
+        Excluye campos calculados para mejorar el rendimiento.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          description: Nombre de la categoría
+          maxLength: 100
+        description:
+          type: string
+          nullable: true
+          title: Descripción
+          description: Descripción opcional de la categoría
+        parent:
+          type: integer
+          nullable: true
+          title: Categoría padre
+          description: Categoría padre para crear subcategorías
+        is_active:
+          type: boolean
+          title: Activa
+          description: Indica si la categoría está activa
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+          description: Orden de visualización (menor número = mayor prioridad)
+      required:
+      - name
+    CategoryList:
+      type: object
+      description: |-
+        Serializer simplificado para listar categorías.
+        Incluye solo los campos esenciales para mejorar el rendimiento.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Nombre
+          description: Nombre de la categoría
+          maxLength: 100
+        slug:
+          type: string
+          description: URL amigable para la categoría
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        parent:
+          type: integer
+          nullable: true
+          title: Categoría padre
+          description: Categoría padre para crear subcategorías
+        is_active:
+          type: boolean
+          title: Activa
+          description: Indica si la categoría está activa
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+          description: Orden de visualización (menor número = mayor prioridad)
+        level:
+          type: string
+          readOnly: true
+        children_count:
+          type: string
+          readOnly: true
+      required:
+      - children_count
+      - id
+      - level
+      - name
+      - slug
+    CategoryTree:
+      type: object
+      description: |-
+        Serializer para mostrar el árbol completo de categorías.
+        Incluye todas las subcategorías anidadas.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Nombre
+          description: Nombre de la categoría
+          maxLength: 100
+        slug:
+          type: string
+          description: URL amigable para la categoría
+          maxLength: 120
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+          nullable: true
+          title: Descripción
+          description: Descripción opcional de la categoría
+        is_active:
+          type: boolean
+          title: Activa
+          description: Indica si la categoría está activa
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+          description: Orden de visualización (menor número = mayor prioridad)
+        level:
+          type: string
+          readOnly: true
+        children:
+          type: string
+          readOnly: true
+      required:
+      - children
+      - id
+      - level
+      - name
+      - slug
+    PaginatedCategoryListList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/CategoryList'
+    PatchedCategoryCreateUpdateRequest:
+      type: object
+      description: |-
+        Serializer específico para crear y actualizar categorías.
+        Excluye campos calculados para mejorar el rendimiento.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          title: Nombre
+          description: Nombre de la categoría
+          maxLength: 100
+        description:
+          type: string
+          nullable: true
+          title: Descripción
+          description: Descripción opcional de la categoría
+        parent:
+          type: integer
+          nullable: true
+          title: Categoría padre
+          description: Categoría padre para crear subcategorías
+        is_active:
+          type: boolean
+          title: Activa
+          description: Indica si la categoría está activa
+        sort_order:
+          type: integer
+          maximum: 2147483647
+          minimum: 0
+          title: Orden
+          description: Orden de visualización (menor número = mayor prioridad)
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
+servers:
+- url: http://127.0.0.1:8000
+  description: Servidor de desarrollo
+tags:
+- name: Categories
+  description: Operaciones CRUD para categorías
+externalDocs:
+  description: Documentación completa del proyecto
+  url: https://github.com/discorp/api-docs

@@ -1,0 +1,81 @@
+# Git
+.git
+.gitignore
+README.md
+*.md
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Environment variables
+.env
+.venv
+ENV/
+env/
+venv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Railway
+.railway/
+
+# Media files (solo para desarrollo)
+media/
+
+# Archivos estáticos compilados
+staticfiles/
+
+# Tests
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+
+# Documentación
+docs/
+
+# Archivos temporales
+*.tmp
+*.temp
+
+# Logs
+*.log

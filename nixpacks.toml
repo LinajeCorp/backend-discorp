@@ -1,0 +1,18 @@
+[phases.setup]
+nixPkgs = ['python311', 'postgresql']
+
+[phases.install]
+cmds = [
+  'curl -LsSf https://astral.sh/uv/install.sh | sh',
+  'export PATH="$HOME/.cargo/bin:$PATH"',
+  'uv sync'
+]
+
+[phases.build]
+cmds = [
+  'export PATH="$HOME/.cargo/bin:$PATH"',
+  'uv run python manage.py collectstatic --noinput'
+]
+
+[start]
+cmd = 'export PATH="$HOME/.cargo/bin:$PATH" && uv run gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3 --timeout 120'

@@ -1,0 +1,56 @@
+---
+alwaysApply: true
+description: Organización de apps Django en carpeta apps/
+---
+# Organización de Apps Django
+
+Estas reglas fijan que todas las apps de Django deben crearse dentro de la carpeta `apps/` para mantener el proyecto organizado.
+
+## Estructura de Apps
+- Todas las apps deben crearse en `apps/<nombre_app>/`
+- Ejemplo: `uv run ./manage.py startapp apps/category`
+- Ejemplo: `uv run ./manage.py startapp apps/users`
+- Ejemplo: `uv run ./manage.py startapp apps/orders`
+
+## Estructura resultante
+```
+apps/
+  category/
+    __init__.py
+    admin.py
+    apps.py
+    models.py
+    views.py
+    ...
+  users/
+    __init__.py
+    admin.py
+    apps.py
+    models.py
+    views.py
+    ...
+```
+
+## Configuración en settings.py
+- Agregar `apps.` al inicio de cada app en `INSTALLED_APPS`:
+  ```python
+  INSTALLED_APPS = [
+      'django.contrib.admin',
+      'django.contrib.auth',
+      'django.contrib.contenttypes',
+      'django.contrib.sessions',
+      'django.contrib.messages',
+      'django.contrib.staticfiles',
+      'apps.category',
+      'apps.users',
+      'apps.orders',
+  ]
+  ```
+
+## Importaciones
+- Para importar desde apps: `from apps.category.models import Category`
+- Para importar en urls: `from apps.category import views`
+
+## Notas
+- Respetar reglas de Django 5.2 definidas en [django-5-2.mdc](mdc:.cursor/rules/django-5-2.mdc).
+- Usar `uv run` para comandos como se define en [uv.mdc](mdc:.cursor/rules/uv.mdc).

@@ -1,0 +1,38 @@
+---
+alwaysApply: true
+---
+# Reglas del proyecto: Django 5.2
+
+Estas reglas fijan que todo el trabajo se realiza considerando Django 5.2.
+
+## Contexto y documentación
+- Usa siempre la documentación de Django 5.2 para APIs, comandos y patrones.
+- Flujo estándar de cambios en modelos:
+  1) Editar `models.py`
+  2) Ejecutar `python manage.py makemigrations`
+  3) Ejecutar `python manage.py migrate`
+
+## Comandos
+- Ejecuta comandos con `python manage.py <comando>` (no `django-admin`) para respetar `DJANGO_SETTINGS_MODULE`.
+- Verificar proyecto sin tocar DB: `python manage.py check`
+- Shell con modelos cargados: `python manage.py shell`
+
+## Convenciones de base de datos
+- Nombres de tablas autogenerados en minúsculas, con formato `<app>_<model>`.
+- Claves primarias automáticas si no se especifica lo contrario.
+- En `ForeignKey`, Django agrega sufijo `_id` por convención.
+
+## Buenas prácticas
+- Mantener apps registradas en `INSTALLED_APPS` de `core/settings.py` antes de migrar.
+- Alinear el motor de base de datos con `DATABASES` en `settings.py`. Por defecto: SQLite (`db.sqlite3`).
+- Versionar migraciones en VCS.
+
+## Estilo de código
+- Preferir APIs estables de Django 5.2; evitar funciones obsoletas.
+- Al crear rutas, usar `path()` en `core/urls.py` y respetar `asgi.py/wsgi.py` provistos por Django 5.2.
+
+## Ejemplos rápidos
+- Crear migraciones: `python manage.py makemigrations | cat`
+- Aplicar migraciones: `python manage.py migrate | cat`
+- Mostrar SQL de una migración: `python manage.py sqlmigrate <app> <migration> | cat`
+

@@ -1,0 +1,125 @@
+# Historial de cambios
+
+- feat(orders): sistema completo de órdenes con carrito de compras y gestión de estados
+  - **MODELOS COMPLETOS**: Order, OrderItem, Cart, CartItem con relaciones
+  - **FLUJO COMPLETO**: Carrito → Checkout → Orden → Estados → Entrega
+  - **Endpoints disponibles**:
+    - `GET /api/orders/` - Listar órdenes del usuario
+    - `POST /api/orders/` - Crear orden directamente
+    - `GET /api/orders/{id}/` - Obtener orden específica
+    - `PUT/PATCH /api/orders/{id}/` - Actualizar orden
+    - `POST /api/orders/{id}/confirm/` - Confirmar orden
+    - `POST /api/orders/{id}/cancel/` - Cancelar orden
+    - `GET /api/orders/stats/` - Estadísticas de órdenes (staff)
+    - `GET /api/cart/` - Ver carrito actual
+    - `POST /api/cart/add_item/` - Agregar producto al carrito
+    - `DELETE /api/cart/clear/` - Limpiar carrito
+    - `POST /api/cart/checkout/` - Convertir carrito a orden
+  - **Estados de Órdenes**:
+    - pending → confirmed → preparing → ready → in_delivery → delivered
+    - Posibilidad de cancelar en estados tempranos
+    - Transiciones controladas por permisos de usuario
+  - **Características**:
+    - Carrito persistente por usuario
+    - Snapshot de productos en órdenes (precios históricos)
+    - Gestión automática de stock
+    - Números de orden únicos autogenerados
+    - Cálculo automático de totales con envío y descuentos
+    - Roles diferenciados (cliente, delivery, staff)
+    - Validaciones de transiciones de estado
+    - Restauración de stock en cancelaciones
+  - **Admin Interface**: Gestión completa con acciones masivas por estado
+  - **Tests**: 11 tests unitarios y de integración
+  - **Swagger**: Documentación completa de API con ejemplos
+  - **Validaciones**: Stock, estados, permisos, transiciones
+
+- feat(products): sistema completo de productos con categorías, imágenes y reseñas
+  - **MODELOS COMPLETOS**: Product, ProductImage, ProductReview con relaciones
+  - **API REST COMPLETA**: CRUD completo + endpoints especializados
+  - **Endpoints disponibles**:
+    - `GET /api/products/` - Listar productos con filtros avanzados
+    - `POST /api/products/` - Crear producto (requiere autenticación)
+    - `GET /api/products/{id}/` - Obtener producto específico
+    - `PUT/PATCH /api/products/{id}/` - Actualizar producto
+    - `DELETE /api/products/{id}/` - Eliminar producto
+    - `GET /api/products/featured/` - Productos destacados
+    - `GET /api/products/search/?q=término` - Búsqueda de productos
+    - `GET /api/products/stats/` - Estadísticas del catálogo
+    - `POST /api/products/{id}/create_review/` - Crear reseña
+    - `GET /api/products/{id}/reviews/` - Listar reseñas del producto
+  - **Características**:
+    - Relación con categorías jerárquicas
+    - Gestión de inventario y stock
+    - Precios con ofertas y descuentos
+    - Sistema de imágenes múltiples
+    - Reseñas y calificaciones de usuarios
+    - Filtros avanzados (precio, categoría, stock, destacados)
+    - Búsqueda por texto completo
+    - Estadísticas del catálogo
+  - **Admin Interface**: Gestión completa con acciones masivas
+  - **Tests**: 21 tests unitarios y de integración
+  - **Swagger**: Documentación completa de API
+  - **Validaciones**: Precios, stock, reseñas únicas por usuario
+
+- feat(auth): API de autenticación JWT limpia y enfocada
+  - **SOLO AUTENTICACIÓN**: Eliminados endpoints de administración de usuarios
+  - **API LIMPIA**: Solo endpoints esenciales de autenticación JWT
+  - **Endpoints disponibles**:
+    - `POST /api/auth/login/` - Login (devuelve tokens + info completa del usuario)
+    - `POST /api/auth/refresh/` - Renovar access token
+    - `GET /api/auth/user/` - Información completa del usuario autenticado
+    - `PATCH /api/auth/user/` - Actualizar información del usuario
+    - `POST /api/auth/logout/` - Logout (invalidar refresh token)
+    - `POST /api/auth/register/` - Registro con tokens automáticos
+  - **Gestión de usuarios**: Solo a través del admin de Django (/admin/)
+  - **Características JWT**:
+    - Tokens con claims personalizados (username, email, roles, verificación)
+    - Login con username o email
+    - Información completa del usuario en response de login
+    - Headers: `Authorization: Bearer <access_token>`
+    - Rotación automática de refresh tokens
+  - **Configuración**:
+    - `djangorestframework-simplejwt` con soporte para blacklist
+    - Tokens: 60min access, 7 días refresh
+    - Blacklist automático de tokens en logout
+  - **Swagger limpio**: Solo sección "Authentication" y "Categories"
+
+- feat(users): implementar API REST completa para usuarios con roles múltiples
+  - **API REST COMPLETA**: Sistema de usuarios consumible via REST API
+  - Serializers especializados: `UserSerializer`, `UserListSerializer`, `UserProfileSerializer`
+  - ViewSet completo con operaciones CRUD y endpoints personalizados
+  - Modelo con roles múltiples (cliente-tienda, cliente-delivery)
+  - Admin interface actualizada para roles múltiples
+
+- docs(cursor): agregar regla global para Django 5.2 y documentación inicial
+  - Añadido `.cursor/rules/django-5-2.mdc`
+  - Añadido `docs/estructura.md`
+  - Añadido `docs/cambios.md`
+
+- docs(cursor): forzar uso de uv/uvx y prohibir pip
+  - Añadido `.cursor/rules/uv.mdc`
+
+- docs(cursor): organizar apps Django en carpeta apps/
+  - Añadido `.cursor/rules/apps-organization.mdc`
+
+- feat(scripts): crear script automatizado para crear apps Django
+  - Añadido `scripts/create_app.sh`
+  - Script automatiza creación de apps en carpeta `apps/`
+  - Configura automáticamente `apps.py` y `INSTALLED_APPS`
+  - Uso: `./scripts/create_app.sh <nombre_app>`
+
+- feat(makefile): agregar comandos make para desarrollo Django
+  - Añadido `Makefile` con comandos de desarrollo
+  - `make dev` - iniciar servidor de desarrollo
+  - `make create APP=<nombre>` - crear nueva app Django
+  - `make check` - verificar configuración
+  - `make migrate` - aplicar migraciones
+  - `make makemigrations` - crear migraciones
+  - `make help` - mostrar ayuda
+
+- feat(environment): configurar variables de entorno con pydantic-settings
+  - Añadido `core/environment.py` para manejo de variables de entorno
+  - Configuración de PostgreSQL con `DATABASE_URL`
+  - Variables: `DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS`
+  - Agregado `psycopg2-binary` para conexión PostgreSQL
+  - Configuración de linting con `.flake8` y `pyproject.toml`

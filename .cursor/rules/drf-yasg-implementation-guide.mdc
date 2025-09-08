@@ -1,0 +1,467 @@
+---
+description: Guía completa paso a paso para implementar documentación automática con drf-yasg y JWT en proyectos Django
+---
+
+# Implementación de drf-yasg con JWT - Guía Completa
+
+Esta regla proporciona una guía paso a paso para implementar documentación automática con `drf-yasg` y autenticación JWT en cualquier proyecto Django REST Framework.
+
+## 📋 Prerrequisitos
+
+Antes de comenzar, asegúrate de tener:
+- Django 5.2+ instalado
+- Django REST Framework configurado
+- JWT tokens (djangorestframework-simplejwt) instalado
+- Modelo User personalizado (opcional)
+
+## 🚀 Paso 1: Instalación de Dependencias
+
+### 1.1 Agregar a pyproject.toml
+```toml
+dependencies = [
+    "drf-yasg>=1.21.10",
+    "djangorestframework>=3.16.1",
+    "djangorestframework-simplejwt[crypto]>=5.5.1",
+]
+```
+
+### 1.2 Instalar dependencias
+```bash
+uv sync  # o pip install -r requirements.txt
+```
+
+## 🔧 Paso 2: Configuración en settings.py
+
+### 2.1 Agregar a INSTALLED_APPS
+```python
+INSTALLED_APPS = [
+    # ... otras apps
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+    "drf_yasg",  # ← Agregar esta línea
+    # ... tus apps
+]
+```
+
+### 2.2 Configuración de REST_FRAMEWORK
+```python
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+    # NO agregar DEFAULT_SCHEMA_CLASS aquí para drf-yasg
+}
+```
+
+### 2.3 Configuración específica de drf-yasg
+```python
+# drf-yasg configuration
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SUPPORTED_SUBMIT_METHODS': [
+        'get', 'post', 'put', 'delete', 'patch'
+    ],
+    'OPERATIONS_SORTER': 'alpha',
+    'TAGS_SORTER': 'alpha',
+    'DOC_EXPANSION': 'none',
+    'DEEP_LINKING': True,
+    'SHOW_EXTENSIONS': True,
+    'SHOW_COMMON_EXTENSIONS': True,
+    'DEFAULT_MODEL_RENDERING': 'example'
+}
+
+REDOC_SETTINGS = {
+    'LAZY_RENDERING': False,
+    'HIDE_HOSTNAME': False,
+    'EXPAND_RESPONSES': ['200', '201'],
+    'PATH_IN_MIDDLE_PANEL': True,
+    'NATIVE_SCROLLBARS': False,
+}
+```
+
+### 2.4 Configuración JWT
+```python
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": True,
+    "ALGORITHM": "HS256",
+    "SIGNING_KEY": SECRET_KEY,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+}
+```
+
+## 🌐 Paso 3: Configuración de URLs Principales
+
+### 3.1 Actualizar core/urls.py
+```python
+from django.contrib import admin
+from django.urls import path, re_path, include
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+
+# Schema view configuration for drf-yasg
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Tu API",
+        default_version='v1',
+        description="Descripción de tu API REST",
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(
+            name="Tu Equipo de Desarrollo",
+            email="dev@tuempresa.com"
+        ),
+        license=openapi.License(name="MIT License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    
+    # API URLs
+    path('api/v1/', include('tu_app.urls')),  # ← Cambiar por tu app
+    
+    # drf-yasg Swagger/OpenAPI URLs
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$',
+            schema_view.without_ui(cache_timeout=0),
+            name='schema-json'),
+    path('docs/',
+         schema_view.with_ui('swagger', cache_timeout=0),
+         name='schema-swagger-ui'),
+    path('redoc/',
+         schema_view.with_ui('redoc', cache_timeout=0),
+         name='schema-redoc'),
+]
+```
+
+## 📝 Paso 4: Crear Serializers Documentados
+
+### 4.1 Crear tu_app/serializers.py
+```python
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer para el modelo User con documentación"""
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name']
+        extra_kwargs = {
+            'username': {
+                'help_text': 'Nombre de usuario único'
+            },
+            'email': {
+                'help_text': 'Correo electrónico válido'
+            },
+            'first_name': {
+                'help_text': 'Nombre del usuario'
+            },
+            'last_name': {
+                'help_text': 'Apellido del usuario'
+            }
+        }
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """Serializer JWT personalizado con información del usuario"""
+    
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        # Agregar información del usuario al response
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+            'first_name': self.user.first_name,
+            'last_name': self.user.last_name,
+        }
+        
+        return data
+```
+
+## 🎯 Paso 5: Crear ViewSets con Decoradores drf-yasg
+
+### 5.1 Crear tu_app/views.py
+```python
+from rest_framework import viewsets, status, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+from django.contrib.auth import get_user_model
+
+from .serializers import UserSerializer, CustomTokenObtainPairSerializer
+
+User = get_user_model()
+
+class UserViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para gestión de usuarios con documentación automática
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    @swagger_auto_schema(
+        operation_description="Obtener lista de usuarios",
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                openapi.IN_QUERY,
+                description="Buscar usuarios por nombre o email",
+                type=openapi.TYPE_STRING
+            )
+        ],
+        responses={
+            200: UserSerializer(many=True),
+            401: "No autenticado"
+        },
+        tags=['Usuarios']
+    )
+    def list(self, request):
+        """Listar usuarios con filtro opcional"""
+        queryset = self.get_queryset()
+        
+        # Filtro de búsqueda
+        search = request.query_params.get('search')
+        if search:
+            queryset = queryset.filter(
+                models.Q(username__icontains=search) |
+                models.Q(email__icontains=search) |
+                models.Q(first_name__icontains=search) |
+                models.Q(last_name__icontains=search)
+            )
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @swagger_auto_schema(
+        operation_description="Crear un nuevo usuario",
+        request_body=UserSerializer,
+        responses={
+            201: UserSerializer,
+            400: "Datos inválidos"
+        },
+        tags=['Usuarios']
+    )
+    def create(self, request):
+        """Crear nuevo usuario"""
+        return super().create(request)
+
+    @swagger_auto_schema(
+        method='get',
+        operation_description="Obtener perfil del usuario autenticado",
+        responses={
+            200: UserSerializer,
+            401: "No autenticado"
+        },
+        tags=['Usuarios']
+    )
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
+    def profile(self, request):
+        """Obtener perfil del usuario actual"""
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data)
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """Vista de autenticación JWT documentada"""
+    serializer_class = CustomTokenObtainPairSerializer
+
+    @swagger_auto_schema(
+        operation_description="Autenticación JWT - Obtener tokens",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['username', 'password'],
+            properties={
+                'username': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Nombre de usuario'
+                ),
+                'password': openapi.Schema(
+                    type=openapi.TYPE_STRING,
+                    description='Contraseña'
+                ),
+            },
+        ),
+        responses={
+            200: openapi.Response(
+                description="Tokens JWT obtenidos exitosamente",
+                examples={
+                    "application/json": {
+                        "access": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                        "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+                        "user": {
+                            "id": 1,
+                            "username": "usuario_ejemplo",
+                            "email": "usuario@ejemplo.com"
+                        }
+                    }
+                }
+            ),
+            401: "Credenciales inválidas"
+        },
+        tags=['Autenticación']
+    )
+    def post(self, request, *args, **kwargs):
+        """Autenticar usuario y obtener tokens JWT"""
+        return super().post(request, *args, **kwargs)
+```
+
+## 🔗 Paso 6: Configurar URLs de la App
+
+### 6.1 Crear tu_app/urls.py
+```python
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView, TokenVerifyView
+from .views import UserViewSet, CustomTokenObtainPairView
+
+# Router para ViewSets
+router = DefaultRouter()
+router.register(r'users', UserViewSet)
+
+urlpatterns = [
+    # URLs del router (CRUD)
+    path('', include(router.urls)),
+    
+    # URLs de autenticación JWT
+    path('auth/login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('auth/verify/', TokenVerifyView.as_view(), name='token_verify'),
+]
+```
+
+## ✅ Paso 7: Verificación y Pruebas
+
+### 7.1 Verificar configuración
+```bash
+python manage.py check
+```
+
+### 7.2 Aplicar migraciones (si es necesario)
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### 7.3 Iniciar servidor
+```bash
+python manage.py runserver
+```
+
+### 7.4 Probar documentación
+- **Swagger UI**: http://127.0.0.1:8000/docs/
+- **ReDoc**: http://127.0.0.1:8000/redoc/
+- **JSON Schema**: http://127.0.0.1:8000/swagger.json
+
+## 🔐 Paso 8: Usar Autenticación en Swagger UI
+
+### 8.1 Obtener token JWT
+1. Ir a `/docs/`
+2. Probar endpoint `POST /api/v1/auth/login/`
+3. Usar credenciales válidas
+4. Copiar el token `access` de la respuesta
+
+### 8.2 Autorizar en Swagger
+1. Clic en botón **"Authorize"** (esquina superior derecha)
+2. En el campo "Value" escribir: `Bearer tu_token_aqui`
+3. Clic en **"Authorize"**
+4. Clic en **"Close"**
+
+### 8.3 Probar endpoints protegidos
+Ahora puedes probar endpoints que requieren autenticación como `/api/v1/users/profile/`
+
+## 📚 Mejores Prácticas
+
+### 1. Organización de Tags
+```python
+@swagger_auto_schema(tags=['Usuarios'])  # Agrupa endpoints
+```
+
+### 2. Documentar parámetros
+```python
+manual_parameters=[
+    openapi.Parameter('param_name', openapi.IN_QUERY, description="Descripción", type=openapi.TYPE_STRING)
+]
+```
+
+### 3. Documentar respuestas
+```python
+responses={
+    200: MiSerializer,
+    400: "Error de validación",
+    401: "No autenticado",
+    404: "No encontrado"
+}
+```
+
+### 4. Help text en serializers
+```python
+extra_kwargs = {
+    'campo': {'help_text': 'Descripción del campo'}
+}
+```
+
+## 🚨 Errores Comunes y Soluciones
+
+### Error: "No module named 'drf_yasg'"
+**Solución**: Instalar drf-yasg y agregarlo a INSTALLED_APPS
+
+### Error: "Bearer token no funciona"
+**Solución**: Verificar configuración de SWAGGER_SETTINGS y JWT
+
+### Error: "Endpoints no aparecen"
+**Solución**: Verificar que las URLs estén incluidas correctamente
+
+### Error: "Schema vacío"
+**Solución**: Asegurar que los ViewSets tengan decoradores @swagger_auto_schema
+
+## 📖 Recursos Adicionales
+
+- **Documentación oficial**: https://drf-yasg.readthedocs.io/en/stable/
+- **JWT con DRF**: https://django-rest-framework-simplejwt.readthedocs.io/
+- **OpenAPI Specification**: https://swagger.io/specification/
+
+## 🎯 Checklist de Implementación
+
+- [ ] Dependencias instaladas
+- [ ] INSTALLED_APPS actualizado
+- [ ] SWAGGER_SETTINGS configurado
+- [ ] URLs principales configuradas
+- [ ] Serializers con help_text
+- [ ] ViewSets con @swagger_auto_schema
+- [ ] URLs de app configuradas
+- [ ] Autenticación JWT funcionando
+- [ ] Documentación accesible en /docs/
+- [ ] Bearer token funciona en Swagger UI
+
+¡Con esta guía tendrás documentación automática profesional con autenticación JWT en cualquier proyecto Django! 🚀

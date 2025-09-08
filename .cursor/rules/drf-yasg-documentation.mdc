@@ -1,0 +1,251 @@
+---
+alwaysApply: true
+description: Reglas para usar drf-yasg como herramienta de documentación API en Django REST Framework
+---
+
+# Documentación API con drf-yasg
+
+Estas reglas establecen que **siempre** usamos `drf-yasg` para la documentación automática de APIs en Django REST Framework.
+
+## ¿Por qué drf-yasg?
+- Documentación automática excelente basada en OpenAPI 2.0 (Swagger)
+- Interfaz Swagger UI y ReDoc integradas
+- Decoradores potentes para personalizar la documentación
+- Soporte completo para autenticación JWT
+- Generación automática de esquemas desde ViewSets y Serializers
+
+## Configuración Base
+
+### 1. Dependencia en pyproject.toml
+```toml
+dependencies = [
+    "drf-yasg>=1.21.10",
+]
+```
+
+### 2. INSTALLED_APPS en settings.py
+```python
+INSTALLED_APPS = [
+    # ... otras apps
+    "drf_yasg",
+]
+```
+
+### 3. Configuración en settings.py
+```python
+# drf-yasg configuration
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header'
+        }
+    },
+    'USE_SESSION_AUTH': False,
+    'JSON_EDITOR': True,
+    'SUPPORTED_SUBMIT_METHODS': ['get', 'post', 'put', 'delete', 'patch'],
+    'OPERATIONS_SORTER': 'alpha',
+    'TAGS_SORTER': 'alpha',
+    'DOC_EXPANSION': 'none',
+    'DEEP_LINKING': True,
+    'SHOW_EXTENSIONS': True,
+    'SHOW_COMMON_EXTENSIONS': True,
+    'DEFAULT_MODEL_RENDERING': 'example'
+}
+
+REDOC_SETTINGS = {
+    'LAZY_RENDERING': False,
+    'HIDE_HOSTNAME': False,
+    'EXPAND_RESPONSES': ['200', '201'],
+    'PATH_IN_MIDDLE_PANEL': True,
+    'NATIVE_SCROLLBARS': False,
+}
+```
+
+### 4. URLs en core/urls.py
+```python
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+from rest_framework import permissions
+
+# Schema view configuration
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Tu API",
+        default_version='v1',
+        description="Descripción de tu API",
+        contact=openapi.Contact(email="dev@tuempresa.com"),
+        license=openapi.License(name="MIT License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
+urlpatterns = [
+    # drf-yasg URLs
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', 
+            schema_view.without_ui(cache_timeout=0), 
+            name='schema-json'),
+    path('docs/', 
+         schema_view.with_ui('swagger', cache_timeout=0), 
+         name='schema-swagger-ui'),
+    path('redoc/', 
+         schema_view.with_ui('redoc', cache_timeout=0), 
+         name='schema-redoc'),
+]
+```
+
+## Decoradores para Personalizar Documentación
+
+### @swagger_auto_schema
+Usa este decorador para personalizar la documentación de endpoints:
+
+```python
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+class UserViewSet(viewsets.ModelViewSet):
+    @swagger_auto_schema(
+        operation_description="Crear un nuevo usuario",
+        request_body=UserSerializer,
+        responses={
+            201: UserSerializer,
+            400: "Datos inválidos"
+        },
+        tags=['Usuarios']
+    )
+    def create(self, request):
+        # Tu lógica aquí
+        pass
+
+    @swagger_auto_schema(
+        operation_description="Obtener lista de usuarios",
+        manual_parameters=[
+            openapi.Parameter(
+                'search',
+                openapi.IN_QUERY,
+                description="Buscar usuarios por nombre",
+                type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: UserSerializer(many=True)},
+        tags=['Usuarios']
+    )
+    def list(self, request):
+        # Tu lógica aquí
+        pass
+```
+
+### Documentar Parámetros de Query
+```python
+@swagger_auto_schema(
+    manual_parameters=[
+        openapi.Parameter(
+            'page',
+            openapi.IN_QUERY,
+            description="Número de página",
+            type=openapi.TYPE_INTEGER
+        ),
+        openapi.Parameter(
+            'ordering',
+            openapi.IN_QUERY,
+            description="Campo para ordenar",
+            type=openapi.TYPE_STRING
+        )
+    ]
+)
+```
+
+### Documentar Respuestas Personalizadas
+```python
+@swagger_auto_schema(
+    responses={
+        200: openapi.Response(
+            description="Éxito",
+            schema=UserSerializer
+        ),
+        404: openapi.Response(
+            description="Usuario no encontrado"
+        ),
+        403: openapi.Response(
+            description="Sin permisos"
+        )
+    }
+)
+```
+
+## Serializers con Documentación
+
+### Agregar help_text a campos
+```python
+class UserSerializer(serializers.ModelSerializer):
+    documento_completo = serializers.ReadOnlyField(
+        help_text="Documento con formato V-12345678"
+    )
+    
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'documento_completo']
+        extra_kwargs = {
+            'username': {
+                'help_text': 'Nombre de usuario único'
+            },
+            'email': {
+                'help_text': 'Correo electrónico válido'
+            }
+        }
+```
+
+## URLs de Documentación
+- **Swagger UI**: `/docs/` - Interfaz interactiva para probar la API
+- **ReDoc**: `/redoc/` - Documentación estática elegante
+- **JSON Schema**: `/swagger.json` - Esquema en formato JSON
+- **YAML Schema**: `/swagger.yaml` - Esquema en formato YAML
+
+## Buenas Prácticas
+
+1. **Siempre usar tags** para organizar endpoints por funcionalidad
+2. **Documentar todos los parámetros** de query y path
+3. **Especificar todas las respuestas posibles** (200, 400, 404, etc.)
+4. **Usar operation_description** para explicar qué hace cada endpoint
+5. **Agregar help_text** a los campos de serializers
+6. **Documentar autenticación** requerida con security=['Bearer']
+
+## Ejemplo Completo
+
+```python
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
+class ProductViewSet(viewsets.ModelViewSet):
+    @swagger_auto_schema(
+        operation_description="Obtener lista de productos con filtros",
+        manual_parameters=[
+            openapi.Parameter(
+                'category',
+                openapi.IN_QUERY,
+                description="Filtrar por categoría",
+                type=openapi.TYPE_STRING
+            ),
+            openapi.Parameter(
+                'price_min',
+                openapi.IN_QUERY,
+                description="Precio mínimo",
+                type=openapi.TYPE_NUMBER
+            )
+        ],
+        responses={
+            200: ProductSerializer(many=True),
+            400: "Parámetros inválidos"
+        },
+        tags=['Productos']
+    )
+    def list(self, request):
+        return super().list(request)
+```
+
+## Referencias
+- Documentación oficial: https://drf-yasg.readthedocs.io/en/stable/
+- No usar `drf-spectacular` - siempre usar `drf-yasg`
+- Integración con JWT automática mediante SWAGGER_SETTINGS
