@@ -28,12 +28,17 @@ SECRET_KEY = env.secret_key
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.debug
 
-ALLOWED_HOSTS = env.allowed_hosts_list
+ALLOWED_HOSTS = env.allowed_hosts_list + [
+    'backend-discrop-production.up.railway.app',
+    '.railway.app',
+    '.up.railway.app',
+]
 
 # Configuración para Railway
 CSRF_TRUSTED_ORIGINS = [
     'https://*.railway.app',
     'https://*.up.railway.app',
+    'https://backend-discrop-production.up.railway.app',
 ]
 
 # Permitir healthchecks sin CSRF
