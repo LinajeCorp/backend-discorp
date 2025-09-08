@@ -14,8 +14,7 @@ cmds = [
 
 [phases.build]  
 cmds = [
-  'mkdir -p static',
-  'uv run python manage.py collectstatic --noinput'
+  'mkdir -p static'
 ]
 
 [start]
