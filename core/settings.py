@@ -12,6 +12,12 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 from core.environment import Environment
+from datetime import timedelta
+import cloudinary
+import os
+import json
+import tempfile
+from firebase_admin import initialize_app, credentials
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -260,7 +266,6 @@ PAYPAL_SANDBOX = env.paypal_sandbox
 FRONTEND_URL = env.frontend_url
 
 # JWT Configuration
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
@@ -340,7 +345,6 @@ CORS_ALLOW_METHODS = [
 # CLOUDINARY SETTINGS
 # ========================================
 
-import cloudinary
 
 cloudinary.config(
     cloud_name=env.cloudinary_cloud_name,
@@ -376,13 +380,6 @@ STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage"
 # Configuración para servir archivos estáticos con whitenoise (si se necesita)
 if not DEBUG:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
-
-
-# Firebase Configuration con fcm-django usando variables de entorno
-import os
-import json
-import tempfile
-from firebase_admin import initialize_app, credentials
 
 
 # Crear credenciales Firebase desde variables de entorno
