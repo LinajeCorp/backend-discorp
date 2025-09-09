@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "channels",
     "fcm_django",
     "apps.users",
+    "apps.projects",
     "apps.notifications",
 ]
 
@@ -340,8 +341,6 @@ CORS_ALLOW_METHODS = [
 # ========================================
 
 import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 
 cloudinary.config(
     cloud_name=env.cloudinary_cloud_name,

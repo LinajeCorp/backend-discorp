@@ -63,6 +63,7 @@ urlpatterns = [
     # API URLs
     path("api/v1/", include("apps.users.urls")),
     path("api/v1/", include("apps.products.urls")),
+    path("api/v1/", include("apps.projects.urls")),
     # FCM Django URLs para notificaciones
     path("api/v1/fcm/", include(fcm_router.urls)),
     # Endpoints personalizados para notificaciones
